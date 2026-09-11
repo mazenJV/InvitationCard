@@ -32,17 +32,18 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html{background:var(--bg)}
   body{min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--serif);-webkit-font-smoothing:antialiased}
-  body.sealed{overflow:hidden;height:100dvh}
+  :root{--vh:1vh}
+  body.sealed{overflow:hidden;height:calc(var(--vh) * 100)}
 
   /* =============== SCREEN 1: sealed envelope, full screen =============== */
-  .stage{position:relative;height:100dvh;min-height:480px;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .stage{position:relative;height:calc(var(--vh) * 100);min-height:480px;width:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
   .stage.present{overflow:visible}            /* nothing clips the card's shadow once it is out */
   /* one continuous, fixed surface behind everything; the pages and their shadows travel over it */
   body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;opacity:0;transition:opacity 1.6s ease .6s;
     background:radial-gradient(ellipse at 50% 42%,rgba(255,252,246,.55),rgba(255,252,246,0) 62%)}
   body.opened::before{opacity:1}
   .stage,.pages{position:relative;z-index:1}
-  .frame{position:relative;flex:none;width:min(88vw,50.6dvh);height:min(90dvh,156.4vw);overflow:visible;perspective:1500px;perspective-origin:50% 47%}
+  .frame{position:relative;flex:none;width:min(88vw,calc(var(--vh) * 50.6));height:min(calc(var(--vh) * 90),156.4vw);overflow:visible;perspective:1500px;perspective-origin:50% 47%}
 
   .env{position:absolute;inset:0;z-index:2;border-radius:var(--r,14px);transform-style:preserve-3d;box-shadow:0 24px 60px -20px rgba(70,50,25,.45),0 4px 14px -6px rgba(70,50,25,.25);transition:transform 1.2s var(--ease),opacity .9s ease .2s}
   .present .env{transform:translateY(130%);opacity:0;visibility:hidden;box-shadow:none;transition:transform 1.2s var(--ease),opacity .9s ease .2s,visibility 0s linear 1.2s,box-shadow .25s ease}
@@ -222,7 +223,7 @@
     <a class="line map c11" href="https://maps.app.goo.gl/q3MCMeDGhWNuhSSdA?g_st=iw" target="_blank" rel="noopener">الموقع على الخريطة</a>
   </section>
   <button class="replay" id="replay">إعادة فتح الدعوة</button>
-  <p class="ver" aria-hidden="true">v80</p>
+  <p class="ver" aria-hidden="true">v81</p>
 </main>
 
 <script>
@@ -239,6 +240,7 @@
   function fitCard(){ // final card size: fill the screen with a margin, whatever the device
     // layout viewport (unaffected by pinch-zoom on iOS) — innerWidth/innerHeight change while zooming and would resize the pages
     const vw=document.documentElement.clientWidth, vh=document.documentElement.clientHeight;
+    document.documentElement.style.setProperty('--vh',(vh/100)+'px');   // frozen height: toolbar/zoom changes don't move the pages
     const s=Math.min(vw*0.98/card.offsetWidth, vh*0.96/card.offsetHeight);
     frame.style.setProperty('--ps',s.toFixed(3));
     const finalW=card.offsetWidth*s;
@@ -257,7 +259,7 @@
       right:`M ${W-r} 0 Q ${W} 0 ${W} ${r} V ${H-r} Q ${W} ${H} ${W-r} ${H} L ${ax} ${ay} Z`};
     for(const k in P) frame.querySelectorAll('.flap.'+k+' .face').forEach(f=>f.style.clipPath=`path("${P[k]}")`);
   }
-  function layout(){placeSeal();fitCard();roundFlaps();}
+  function layout(){document.documentElement.style.setProperty('--vh',(document.documentElement.clientHeight/100)+'px');placeSeal();fitCard();roundFlaps();}
   let lastW=0,lastH=0,raf=0;
   function onResize(){cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{
     const w=document.documentElement.clientWidth,h=document.documentElement.clientHeight;
